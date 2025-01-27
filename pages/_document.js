@@ -5,6 +5,7 @@ class MyDocument extends Document {
     return (
       <Html lang='en'>
         <Head>
+          <link rel='icon' href='/static/coffee.png' />
           <link
             rel='preload'
             href='/fonts/Charm-bold.ttf'
