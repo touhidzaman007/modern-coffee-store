@@ -92,6 +92,7 @@ const CoffeeStore = initialProps => {
   const isCoffeeStoreEmpty = useMemo(
     () => !coffeeStore || isEmpty(coffeeStore),
     [coffeeStore],
+    
   );
 
   useEffect(() => {
