@@ -5,7 +5,7 @@ import Image from 'next/image';
 import cls from 'classnames';
 import { useRouter } from 'next/router';
 import { fetchCoffeeStores } from '@/lib/coffee-stores';
-import { useState, useContext, useEffect, useCallback } from 'react';
+import { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import { StoreContext } from '@/store/coffeeStore-context';
 import { isEmpty, fetcher } from '@/utils';
 import useSWR from 'swr';
@@ -89,29 +89,38 @@ const CoffeeStore = initialProps => {
     }
   }, []);
 
+  const isCoffeeStoreEmpty = useMemo(
+    () => !coffeeStore || isEmpty(coffeeStore),
+    [coffeeStore],
+  );
+
   useEffect(() => {
-    if (!id) return; // Exit if no id
+    const checkCoffeeStore = async () => {
+      if (!id) return; // Exit if no id
 
-    if (!coffeeStore || isEmpty(coffeeStore)) {
-      if (coffeeStoresNearMe && coffeeStoresNearMe.length > 0) {
-        const coffeStoreFromContext = coffeeStoresNearMe.find(
-          store => store?.id?.toString() === id?.toString(),
-        );
+      if (isCoffeeStoreEmpty) {
+        if (coffeeStoresNearMe && coffeeStoresNearMe.length > 0) {
+          const coffeStoreFromContext = coffeeStoresNearMe.find(
+            store => store?.id?.toString() === id?.toString(),
+          );
 
-        if (coffeStoreFromContext) {
-          setCoffeeStore(coffeStoreFromContext);
-          handleCreateCoffeeStore(coffeStoreFromContext);
+          if (coffeStoreFromContext) {
+            setCoffeeStore(coffeStoreFromContext);
+            await handleCreateCoffeeStore(coffeStoreFromContext);
+          }
+          console.log(coffeStoreFromContext);
         }
       } else if (initialProps?.coffeeStores) {
-        handleCreateCoffeeStore(initialProps.coffeeStores);
+        await handleCreateCoffeeStore(initialProps.coffeeStores);
       }
-    }
+    };
+    checkCoffeeStore();
   }, [
     id,
-    coffeeStore,
+    isCoffeeStoreEmpty,
     coffeeStoresNearMe,
+    initialProps,
     handleCreateCoffeeStore,
-    initialProps?.coffeeStores,
   ]);
 
   // Invoking SWR
